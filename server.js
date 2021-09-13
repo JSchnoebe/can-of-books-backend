@@ -3,7 +3,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-app.use(cors());
+
 const mongoose = require('mongoose');
 
 
@@ -19,6 +19,7 @@ db.once('open', function(){
 const Book = require('./models/book');
 
 const app = express();
+app.use(cors()); 
 
 // Route handlers
 app.get('/books', async (req, res) => {

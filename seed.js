@@ -28,4 +28,8 @@ async function seed() {
     available: true,
     email: 'jarenschnoebelen@yahoo.com',
   })
+
+  mongoose.disconnect();
 }
+
+seed();
