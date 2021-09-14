@@ -17,15 +17,18 @@ db.once('open', function(){
 
 // import our Mongoose model
 const Book = require('./models/book');
+const { response } = require('express');
 
 const app = express();
 app.use(cors()); 
 
 // Route handlers
-app.get('/books', async (req, res) => {
-  const books = await Book.find();
-
-  res.send(books);
+app.get('/books', (req, res) => {
+    Book.find((err, bookResponse) => {
+    console.log(bookResponse);
+    res.send(bookResponse);
+  });
+  
 })
 
 const PORT = process.env.PORT || 3001;
