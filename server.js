@@ -5,6 +5,34 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+// Authenication boilerplate
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
+
+const client = jwksClient({
+  jwksUri: 'https://dev-d6vsji4s.us.auth0.com/.well-known/jwks.json'
+});
+
+const { promisify } = require('util');
+
+const verify = promisify(jwt.verify);
+
+function getKey(header, callback) {
+  client.getSigningKey(header.kid, function (err, key) {
+    if (err) return callback(err);
+
+    const signingKey = key.publicKey || key.rsaPublicKey;
+    callback(null, signingKey);
+  });
+}
+
+async function verifyUser(authorization) {
+  if (!authorization) return null;
+  let token = authorization.split(' ')[1];
+
+  return await verify(token, getKey, {});
+}
+
 
 mongoose.connect(process.env.MONGODB_URL);
 
@@ -24,7 +52,19 @@ app.use(cors());
 app.use(express.json());
 
 // Route handlers
-app.get('/books', (req, res) => {
+app.get('/books', async (req, res) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    res.sendStatus(401);
+    return;
+  }
+
+  let token = authorization.split(' ')[1];
+  let verified = await jwt.verify(token, getKey);
+  if (!verified) {
+    res.sendStatus(401);
+    return;
+  }
     Book.find((err, bookResponse) => {
     console.log(bookResponse);
     res.send(bookResponse);
