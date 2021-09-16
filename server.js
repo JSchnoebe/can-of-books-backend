@@ -54,6 +54,12 @@ app.use(express.json());
 // Route handlers
 app.get('/books', async (req, res) => {
   const { authorization } = req.headers;
+
+  let user = await verifyUser(authorization);
+  if (!user) {
+    res.sendStatus(401);
+    return;
+  }
   if (!authorization) {
     res.sendStatus(401);
     return;
